@@ -1,0 +1,138 @@
+% Bandlimited functions are functions which have no frequencies larger than the bandlimit, c. They are very useful in signal analysis and physics, where we expect signals to have an essentially finite bandlimit in practice. A good basis for bandlimited functions are so-called Prolate Spheroidal Wave Functions. This paper goes over a gaussian quadrature scheme and interpolation schemes for these functions.
+
+% If we can implement a few things from this paper that would be cool. Namely:
+% - Approximating PSWFs with Legendre polynomials
+% - Numerical evaluation of PSWFs
+% - Finding roots of Legendre polynomials
+% - Finding the associated eigenvalues of PSWFs
+% - Computing derivatives of PSWFs numerically
+% - Implementing PSWF Gaussian Quadrature
+
+\documentclass[10pt]{beamer}
+\usetheme{Darmstadt}
+\usecolortheme{seahorse}
+\usepackage{amsmath}
+\setbeamertemplate{headline}{}
+% \newtheorem{definition}{Definition}
+
+\title{Integral Equations \& Gaussian Quadrature}
+\subtitle{Prolate Spheroidal Wavefunctions (PSWFs) and Bandlimited Functions}
+\author{Alexandros Phardis}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+    \maketitle
+\end{frame}
+
+\begin{frame}{Presentation Outline}
+    \begin{block}{Topics}
+        \tableofcontents[hideallsubsections]
+    \end{block}
+\end{frame}
+
+\section{Introduction \& Prerequisites}
+
+\begin{frame}{The Problem with Polynomials}
+    \begin{itemize}
+        \item Classical numerical analysis relies heavily on \textbf{polynomials} for interpolation and quadrature.
+        \item However, in physics, fluid dynamics, and signal processing, we often encounter \textbf{band-limited functions} (functions with a maximum frequency, $c$).
+        \item While polynomials \textit{can} approximate these functions, they are usually not optimal.
+        \item \textbf{Goal:} Build numerical tools explicitly designed for band-limited functions.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Basics of Integral Equations}
+    \begin{definition}
+An \textbf{Integral Equation} is an equation where the unknown function appears under an integral sign.
+    \end{definition}
+        \begin{definition}
+\textbf{Volterra Equation (Second Kind):} 
+\[\varphi(x) = \int_{a}^{x} K(x-t)\varphi(t)dt + \sigma(x)\]
+    \end{definition}
+    \begin{definition}
+\textbf{Fredholm Equation (Eigenvalue Problem):}
+        \[ \lambda \psi(x) = \int_{-1}^{1} K(x,t) \psi(t) dt \]
+            \end{definition}
+We will see that our special functions for band-limited analysis emerge as solutions (eigenfunctions) to a specific integral equation.
+\end{frame}
+
+\begin{frame}{Basics of Integral Equations: Volterra}
+    \begin{block}{Volterra Equation (Second Kind)}
+        \[ \varphi(x) = \int_{a}^{x} K(x-t)\varphi(t)dt + \sigma(x) \]
+    \end{block}
+    \begin{itemize}
+        \item \textbf{$\varphi(x)$}: The \textbf{unknown function} we are solving for.
+        \item \textbf{$K(x-t)$}: The \textbf{Kernel}. It represents the "weight" or influence of past values ($t$) on the current state ($x$).
+        \item \textbf{$\sigma(x)$}: The \textbf{forcing function} (non-homogeneous term); an external input independent of $\varphi$.
+        \item \textbf{Limits}: The upper limit is the variable \textbf{$x$}, meaning the integral is evaluated over a "moving" or evolving interval.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Basics of Integral Equations: Fredholm}
+    \begin{block}{Fredholm Equation (Eigenvalue Problem)}
+        \[ \lambda \psi(x) = \int_{-1}^{1} K(x,t) \psi(t) dt \]
+    \end{block}
+    \begin{itemize}
+        \item \textbf{$\psi(x)$}: The \textbf{eigenfunction}. In this paper, these are the Prolate Spheroidal Wavefunctions (PSWFs).
+        \item \textbf{$K(x,t)$}: The \textbf{Kernel}. For band-limited functions, this is often the Fourier kernel $e^{icxt}$.
+        \item \textbf{$\lambda$}: The \textbf{eigenvalue}; a scaling constant associated with the function $\psi$.
+        \item \textbf{Limits}: The limits are \textbf{fixed} (here $-1$ to $1$), representing a global operation over the entire domain.
+    \end{itemize}
+\end{frame}
+
+\section{Gaussian Quadrature}
+
+\begin{frame}{What is Gaussian Quadrature?}
+    \begin{itemize}
+        \item \textbf{Numerical Integration:} Approximating an integral as a weighted sum of function values.
+        $$ \int_{a}^{b} f(x) \omega(x) dx \approx \sum_{j=1}^{n} w_j f(x_j) $$
+        \item $x_j$ are the \textbf{nodes} and $w_j$ are the \textbf{weights}.
+        \item \textbf{Classical Gaussian Quadrature:} Chooses nodes (roots of Legendre polynomials) and weights to integrate polynomials up to degree $2n-1$ \textit{exactly}.
+        \item Can we generalize this to integrate band-limited functions exactly? Yes!
+    \end{itemize}
+\end{frame}
+
+\section{Prolate Spheroidal Wavefunctions (PSWFs)}
+
+\begin{frame}{Introducing PSWFs}
+    \begin{itemize}
+        \item \textbf{Prolate Spheroidal Wavefunctions (PSWFs)}, denoted $\psi_j(x)$, are the natural basis for band-limited functions on an interval $[-1, 1]$.
+        \item They are defined as the eigenfunctions of the integral operator $F_c$:
+        $$ \lambda_j \psi_j(x) = \int_{-1}^{1} e^{icxt} \psi_j(t) dt $$
+        \item $\lambda_j$ are the eigenvalues, and $c$ is the bandlimit.
+        \item They are orthogonal, complete in $L^2[-1,1]$*, and uniquely alternate between even and odd functions.
+    \end{itemize}
+*\(L^2[-1,1]\) is a Hilbert space of real-valued (or complex-valued) Lebesgue measurable functions \(f\) defined on the interval \([-1,1]\) such that the integral of their square is finite.
+\end{frame}
+
+
+\section{Gaussian Quadrature Applications to PSWFs}
+
+\begin{frame}{PSWF Gaussian Quadrature}
+    \begin{itemize}
+        \item To integrate a band-limited function, we find the roots of the $n$-th PSWF, $\psi_n(x) = 0$.
+        \item These roots become our \textbf{quadrature nodes}, $x_1, \dots, x_n$.
+        \item We then solve a linear system to find the weights $w_j$:
+        $$ \sum_{j=1}^{n} w_j \psi_i(x_j) = \int_{-1}^{1} \psi_i(x) dx \quad \text{for } i = 0, \dots, n-1 $$
+        \item \textbf{Result:} A highly stable quadrature rule with strictly positive weights that requires drastically fewer points than standard Gaussian quadrature for oscillatory/wave functions.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Conclusion}
+    \begin{itemize}
+        \item Polynomials are great, but not universal. 
+        \item By leveraging integral equations and Gaussian quadratures, we can extract PSWFs as a superior basis for band-limited functions.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\centering
+\begin{Huge}
+\phantom{h}\\
+THANK YOU!
+\end{Huge}
+\end{frame}
+
+\end{document}
